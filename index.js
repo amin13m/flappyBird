@@ -2,30 +2,37 @@ let ca = document.querySelector("canvas")
 let ctx = ca.getContext("2d")
 
 let fram = 0
+//for change to degree
+
 
 let sprite = new Image()
 
 sprite.src = "image/template.png"
 
-var state={
-    current:0,
-    getready:0,
-    game:1,
-    gameover:2,
+var state = {
+    current: 0,
+    getready: 0,
+    game: 1,
+    gameover: 2,
 }
 
+let dg=Math.PI/180
 
-function clickHandler(){
-    if(state.getready==state.current){
-    state.current=state.game
+function clickHandler() {
+    if (state.getready == state.current) {
+        state.current = state.game
+        
 
-    }else if(state.game==state.current){
+    } else if (state.game == state.current) {
         bird.flap()
 
-    }else{
-        state.current=state.getready
+    } else if (state.current == state.gameover) {
+        state.current = state.getready
+        bird.y = 50
+        bird.spead = 0
+        bird.rotation=0
     }
-    
+
 
 }
 
@@ -33,8 +40,8 @@ function clickHandler(){
 
 
 //document.addEventListener("click",clickHandler())
-document.addEventListener("keydown",(e)=>{
-    if(e.which==32){
+document.addEventListener("keydown", (e) => {
+    if (e.which == 32) {
         clickHandler()
     }
 })
@@ -60,15 +67,24 @@ let bg = {
 
 let fg = {
     sx: 220,
-    sy: -60,
+    sy: -5,
     w: 170,
-    h: 120,
+    h: 50,
     x: -5,
-    y: ca.height - 108,
+    y: ca.height - 50,
+    dx:1,
     draw() {
         ctx.drawImage(
             sprite, this.sx, this.sy, this.w, this.h,
             this.x, this.y, this.w * 2, this.h)
+    },
+    update(){
+        if(state.current==state.game){
+            if(this.x>-24){
+                this.x=this.x-this.dx
+            }else this.x=-5
+        }
+
     }
 }
 
@@ -76,58 +92,97 @@ let fg = {
 let bird = {
     animation: [{
             sx: 380,
-            sy: 180
+            sy: 187
         },
         {
             sx: 380,
-            sy: 206
+            sy: 212
         },
         {
             sx: 380,
-            sy: 232
+            sy: 239
         },
         {
             sx: 380,
-            sy: 180
+            sy: 211
         },
     ],
     sx: 380,
     sy: 235,
-    w: 100,
-    h: 20,
-    x: 100,
+    w: 18,
+    h: 14,
+    x: 80,
     y: 50,
+    spead: 0,
+    gravity: 0.1,
     animationIndex: 0,
-
+    rotation: 0,
+    jump:12,
 
     draw() {
-       
-        let Bird = this.animation[this.animationIndex]
 
-         ctx.drawImage(
+        let Bird = this.animation[this.animationIndex]
+        ctx.save()
+
+        ctx.translate(this.x, this.y)
+        //fgfgfghf
+        ctx.rotate(this.rotation)
+
+        ctx.drawImage(
             sprite, Bird.sx, Bird.sy, this.w, this.h,
-            this.x - this.w / 2, this.y - this.h / 2, this.w * 2, this.h)
+            -this.w / 2, -this.h / 2, this.w+1 , this.h)
+
+        ctx.restore()
     },
-    flap(){
+
+    update() {
+        if (state.current == state.game) {
+            this.y += this.spead
+            this.spead += this.gravity
+
+            if(this.spead*9<this.jump){
+                this.rotation=-25*dg
+            }else{
+                this.rotation=25*dg
+            }
+        }
+
+        if (this.y > ca.height - 43) {
+            state.current = state.gameover
+            this.animationIndex=1
+        }
+    },
+
+    flap() {
+        this.y -= this.jump
+        this.spead = 0
 
     }
 }
 
+setInterval((e) => {
+    if (bird.animationIndex > 3) {
+        bird.animationIndex++
+
+    } else {
+        bird.animationIndex = 0
+    }
+}, 200)
 
 let gr = {
     sx: 250,
     sy: 70,
     w: 100,
     h: 25,
-    x: ca.width/2- 100,
-    y: 40,
+    x: ca.width / 2 - 100,
+    y: 20,
     draw() {
-        if(state.current==state.getready){
-             ctx.drawImage(
+        if (state.current == state.getready) {
+            ctx.drawImage(
                 sprite, this.sx, this.sy, this.w, this.h,
                 this.x, this.y, this.w * 2, this.h)
         }
-       
+
     }
 }
 
@@ -136,13 +191,13 @@ let go1 = {
     sy: 170,
     w: 100,
     h: 25,
-    x: ca.width/2- 100,
-    y: 40,
+    x: ca.width / 2 - 100,
+    y: 10,
     draw() {
-        if(state.current==state.gameover){
-        ctx.drawImage(
-            sprite, this.sx, this.sy, this.w, this.h,
-            this.x, this.y, this.w * 2, this.h)
+        if (state.current == state.gameover) {
+            ctx.drawImage(
+                sprite, this.sx, this.sy, this.w, this.h,
+                this.x, this.y, this.w * 2, this.h)
         }
     }
 }
@@ -153,25 +208,17 @@ let go2 = {
     sy: 190,
     w: 120,
     h: 70,
-    x: ca.width/2- 110,
-    y: 60,
+    x: ca.width / 2 - 110,
+    y: 30,
     draw() {
-        if(state.current==state.gameover){
-        ctx.drawImage(
-            sprite, this.sx, this.sy, this.w, this.h,
-            this.x, this.y, this.w * 2, this.h)
+        if (state.current == state.gameover) {
+            ctx.drawImage(
+                sprite, this.sx, this.sy, this.w, this.h,
+                this.x, this.y, this.w * 2, this.h)
         }
     }
 }
 
-setInterval((e) => {
-    if (bird.animationIndex < 3) {
-        bird.animationIndex++
-
-    }else{
-         bird.animationIndex=0
-        }
-},500)
 
 
 
@@ -179,7 +226,8 @@ setInterval((e) => {
 
 
 function update() {
-
+    bird.update()
+    fg.update()
 }
 
 function draw() {
@@ -202,3 +250,5 @@ function animate() {
 }
 
 animate()
+
+//state.current=0
