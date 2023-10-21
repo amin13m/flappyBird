@@ -45,6 +45,67 @@ document.addEventListener("keydown", (e) => {
         clickHandler()
     }
 })
+/*
+    sx: 152,
+    sy: 0,
+    w: 26,
+    h: 163,
+    x: ca.width / 2 - 100,
+    y: -100,
+
+*/ 
+let pipes={
+    top:{
+        sx:152,
+        sy:0
+    },
+    bottom:{
+        sx:20,
+        sy:0
+    },
+    w:26,
+    h:163,
+    dx:2,
+    gap:80,
+    position: [],
+    maxYPos:-150,
+    draw(){
+        for(let i ;i<this.position.length;i++){
+            let p=this.position[i];
+            
+            let topYPos=p.y;
+            let bottomYPos=p.y+this.h+this.gap;
+
+            ctx.drawImage(
+                sprite, this.top.sx, this.top.sy, this.w, this.h,
+                p.x, topYPos, this.w + 10, this.h)
+             ctx.drawImage(
+                sprite, this.bottom.sx, this.bottom.sy, this.w, this.h,
+                p.x, bottomYPos, this.w + 10, this.h)
+        
+            
+    
+        }
+
+    },
+    update(){
+        if(state.current==state.game){
+            if(fram % 100 == 0){
+                this.position.push({
+                    x:ca.width-150,
+                    y:this.maxYPos*(Math.random()+1),
+                })
+            }
+            for(let i ;i<this.position.length;i++){
+                let p=this.position[i];
+                p.x-=this.dx;
+
+            }
+        }
+    }
+}
+
+
 
 let bg = {
     sx: 0,
@@ -122,8 +183,10 @@ let bird = {
     draw() {
 
         let Bird = this.animation[this.animationIndex]
+
         ctx.save()
 
+        
         ctx.translate(this.x, this.y)
         //fgfgfghf
         ctx.rotate(this.rotation)
@@ -161,7 +224,7 @@ let bird = {
 }
 
 setInterval((e) => {
-    if (bird.animationIndex > 3) {
+    if (bird.animationIndex <3) {
         bird.animationIndex++
 
     } else {
@@ -228,6 +291,7 @@ let go2 = {
 function update() {
     bird.update()
     fg.update()
+    pipes.update()
 }
 
 function draw() {
@@ -239,6 +303,7 @@ function draw() {
     gr.draw()
     go1.draw()
     go2.draw()
+    pipes.draw()
 }
 
 function animate() {
