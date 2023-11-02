@@ -1,8 +1,8 @@
 let ca = document.querySelector("canvas")
+
 let ctx = ca.getContext("2d")
 
 let fram = 0
-//for change to degree
 
 
 let sprite = new Image()
@@ -16,6 +16,39 @@ var state = {
     gameover: 2,
 }
 
+let score = {
+    best: localStorage.getItem("best") || 0,
+    value: 0,
+    draw() {
+        if (state.current == state.game) {
+            ctx.save()
+            ctx.fillStyle = 'white'
+            ctx.lineWidth = 2
+
+            ctx.font = "15px IMPACT"
+
+            ctx.fillText(this.value, 140, 30)
+            ctx.strokeText(this.value, 140, 30)
+            ctx.restore()
+
+        } else if (state.current == state.gameover) {
+
+            ctx.save()
+            ctx.fillStyle = 'white'
+
+            ctx.lineWidth = 2
+            ctx.font = "15px IMPACT"
+
+            ctx.fillText(this.value, 210, 63)
+            ctx.strokeText(this.value, 210, 63)
+
+            ctx.fillText(this.best, 210, 83)
+            ctx.strokeText(this.best, 210, 83)
+            ctx.restore()
+        }
+    },
+}
+
 let dg = Math.PI / 180
 
 function clickHandler() {
@@ -25,14 +58,14 @@ function clickHandler() {
 
     } else if (state.game == state.current) {
         bird.flap()
-        
+
 
     } else if (state.current == state.gameover) {
         state.current = state.getready
         bird.y = 50
         bird.spead = 0
         bird.rotation = 0
-        ca.style.borderColor="black"
+        ca.style.borderColor = "black"
     }
 
 
@@ -41,27 +74,18 @@ function clickHandler() {
 
 
 
-//document.addEventListener("click",clickHandler())
+
 document.addEventListener("keydown", (e) => {
     if (e.which == 32) {
         clickHandler()
     }
 })
-/*
-    sx: 152,
-    sy: 0,
-    w: 26,
-    h: 163,
-    x: ca.width / 2 - 100,
-    y: -100,
-
-*/ 
 
 
 document.addEventListener("click", (e) => {
-    
-        clickHandler()
-    
+
+    clickHandler()
+
 })
 
 /*
@@ -86,66 +110,73 @@ class pipe {
         }
         this.w = 26
         this.h = 163
-        this.y =-100*(Math.random())-1.7*fg.h
-        this.x =ca.width  -10
-        this.dx = 2
-        this.gap = 40
+        this.y = -100 * (Math.random()) - 1.7 * fg.h
+        this.x = ca.width - 10
+        this.dx = 1
+        this.gap = 90
         this.position = []
         this.maxYPos = -150
 
 
     }
-    
+
 
     draw() {
-        let bottomYPos=this.y+this.h+this.gap
-            ctx.drawImage(
-                sprite, this.top.sx, this.top.sy, this.w, this.h,
-                this.x, this.y, this.w + 10, this.h)
-            ctx.drawImage(
-                sprite, this.bottom.sx, this.bottom.sy, this.w, this.h,
-                this.x, bottomYPos, this.w + 10, this.h)
+        let bottomYPos = this.y + this.h + this.gap
+        ctx.drawImage(
+            sprite, this.top.sx, this.top.sy, this.w, this.h,
+            this.x, this.y, this.w + 10, this.h)
+        ctx.drawImage(
+            sprite, this.bottom.sx, this.bottom.sy, this.w, this.h,
+            this.x, bottomYPos, this.w + 10, this.h)
 
 
 
-        
+
 
     }
-    
+
     update() {
         if (state.current == state.game) {
-                
-                this.x -= this.dx;
-                let bPP=this.y+this.h+this.gap
-            
+
+            this.x -= this.dx;
+            let bPP = this.y + this.h + this.gap
+
         }
     }
-    
+
 }
 
 
 
-let Pipes=[]
+let Pipes = []
 
-let pd =-4
+let pd = -1
 
 
-setInterval(()=>{
-    if(state.current==state.game){
-    let pipes = new pipe()
-    
-    Pipes.push(pipes)
+setInterval(() => {
+    if (state.current == state.game) {
+        let pipes = new pipe()
 
-    pd++
+        Pipes.push(pipes)
 
-    if(pd>0){
-        Pipes.shift()
+        pd++
+
+        if (pd >= -2) {
+            score.value = pd + 2
+            if (score.best < score.value) {
+                score.best = score.value
+                localStorage.setItem("best", score.best)
+            }
+        }
+
+        if (pd > 0) {
+            Pipes.shift()
+
+        }
     }
-}
 
-},1800)
-
-    
+}, 1800)
 
 
 
@@ -223,7 +254,7 @@ let bird = {
     animationIndex: 0,
     rotation: 0,
     jump: 12,
-    radius:10,
+    radius: 10,
 
     draw() {
 
@@ -231,7 +262,7 @@ let bird = {
 
         ctx.save()
 
-        
+
         ctx.translate(this.x, this.y)
         //fgfgfghf
         ctx.rotate(this.rotation)
@@ -269,7 +300,7 @@ let bird = {
 }
 
 setInterval((e) => {
-    if (bird.animationIndex <3) {
+    if (bird.animationIndex < 3) {
         bird.animationIndex++
 
     } else {
@@ -307,7 +338,7 @@ let go1 = {
                 sprite, this.sx, this.sy, this.w, this.h,
                 this.x, this.y, this.w * 2, this.h)
 
-                ca.style.borderColor='red'
+            ca.style.borderColor = 'red'
         }
     }
 }
@@ -329,23 +360,39 @@ let go2 = {
     }
 }
 
+let dxp = 1
 
-function hit(){
-    if(state.current==state.game){
-        for(let i =0; i<Pipes.length ;i++){
-            let pipes=Pipes[i]
-            if (pipes.x + pipes.w > bird.x && bird.x > pipes.x) {
-                
-                if(bird.y - bird.radius>pipes.y+pipes.h &&
-                     bird.y<pipes.y+pipes.h+ pipes.gap){
+function stateControl() {
+    if (state.current == state.game) {
+        for (let i = 0; i < Pipes.length; i++) {
+            let pipes = Pipes[i]
 
-                    
-                }else{
-                    state.current= state.gameover
+            pipes.dx = dxp
+
+            pipes.gap -= dxp / 7
+
+
+            if (score.value % 2 == 0 && score.value != 0) {
+
+                dxp += 0.0005
+            }
+
+            if (pipes.x + pipes.w > bird.x && bird.x + bird.radius > pipes.x) {
+
+                if (bird.y - bird.radius > pipes.y + pipes.h &&
+                    bird.y < pipes.y + pipes.h + pipes.gap) {
+
+
+                } else {
+                    state.current = state.gameover
                 }
             }
-          }
+        }
+    } else if (state.current == state.getready) {
+        score.value = 0
+        dxp = 1
     }
+
 }
 
 
@@ -354,10 +401,10 @@ function hit(){
 function update() {
     bird.update()
     fg.update()
-    for(let i =0; i<Pipes.length ;i++){
-        let pipes=Pipes[i]
+    for (let i = 0; i < Pipes.length; i++) {
+        let pipes = Pipes[i]
         pipes.update()
-      }
+    }
 }
 
 function draw() {
@@ -367,28 +414,29 @@ function draw() {
     fg.draw()
     bird.draw()
     gr.draw()
-        for(let i =0; i<Pipes.length ;i++){
-      let pipes=Pipes[i]
-      pipes.draw()
+    for (let i = 0; i < Pipes.length; i++) {
+        let pipes = Pipes[i]
+        pipes.draw()
     }
 
     go1.draw()
     go2.draw()
-   
+    score.draw()
+
 }
 
 function animate() {
     update()
     draw()
     fram++
-    if(state.current==state.getready){
-        for(let i =0; i<Pipes.length ;i++){
+    if (state.current == state.getready) {
+        for (let i = 0; i < Pipes.length; i++) {
             Pipes.pop()
-          }
+        }
 
-          pd=-4
+        pd = -4
     }
-    hit()
+    stateControl()
 
     requestAnimationFrame(animate)
 }
