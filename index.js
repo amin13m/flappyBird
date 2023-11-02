@@ -16,21 +16,23 @@ var state = {
     gameover: 2,
 }
 
-let dg=Math.PI/180
+let dg = Math.PI / 180
 
 function clickHandler() {
     if (state.getready == state.current) {
         state.current = state.game
-        
+
 
     } else if (state.game == state.current) {
         bird.flap()
+        
 
     } else if (state.current == state.gameover) {
         state.current = state.getready
         bird.y = 50
         bird.spead = 0
-        bird.rotation=0
+        bird.rotation = 0
+        ca.style.borderColor="black"
     }
 
 
@@ -54,6 +56,99 @@ document.addEventListener("keydown", (e) => {
     y: -100,
 
 */ 
+
+
+document.addEventListener("click", (e) => {
+    
+        clickHandler()
+    
+})
+
+/*
+    sx: 152,
+    sy: 0,
+    w: 26,
+    h: 163,
+    x: ca.width / 2 - 100,
+    y: -100,
+
+*/
+
+class pipe {
+    constructor() {
+        this.top = {
+            sx: 152,
+            sy: 0
+        }
+        this.bottom = {
+            sx: 180,
+            sy: 0
+        }
+        this.w = 26
+        this.h = 163
+        this.y =-100*(Math.random())-1.7*fg.h
+        this.x =ca.width  -10
+        this.dx = 2
+        this.gap = 40
+        this.position = []
+        this.maxYPos = -150
+
+
+    }
+    
+
+    draw() {
+        let bottomYPos=this.y+this.h+this.gap
+            ctx.drawImage(
+                sprite, this.top.sx, this.top.sy, this.w, this.h,
+                this.x, this.y, this.w + 10, this.h)
+            ctx.drawImage(
+                sprite, this.bottom.sx, this.bottom.sy, this.w, this.h,
+                this.x, bottomYPos, this.w + 10, this.h)
+
+
+
+        
+
+    }
+    
+    update() {
+        if (state.current == state.game) {
+                
+                this.x -= this.dx;
+                let bPP=this.y+this.h+this.gap
+            
+        }
+    }
+    
+}
+
+
+
+let Pipes=[]
+
+let pd =-4
+
+
+setInterval(()=>{
+    if(state.current==state.game){
+    let pipes = new pipe()
+    
+    Pipes.push(pipes)
+
+    pd++
+
+    if(pd>0){
+        Pipes.shift()
+    }
+}
+
+},1800)
+
+    
+
+
+
 
 
 let bg = {
@@ -82,17 +177,17 @@ let fg = {
     h: 50,
     x: -5,
     y: ca.height - 50,
-    dx:1,
+    dx: 1,
     draw() {
         ctx.drawImage(
             sprite, this.sx, this.sy, this.w, this.h,
             this.x, this.y, this.w * 2, this.h)
     },
-    update(){
-        if(state.current==state.game){
-            if(this.x>-24){
-                this.x=this.x-this.dx
-            }else this.x=-5
+    update() {
+        if (state.current == state.game) {
+            if (this.x > -24) {
+                this.x = this.x - this.dx
+            } else this.x = -5
         }
 
     }
@@ -124,10 +219,11 @@ let bird = {
     x: 80,
     y: 50,
     spead: 0,
-    gravity: 0.1,
+    gravity: 0.08,
     animationIndex: 0,
     rotation: 0,
-    jump:12,
+    jump: 12,
+    radius:10,
 
     draw() {
 
@@ -142,7 +238,7 @@ let bird = {
 
         ctx.drawImage(
             sprite, Bird.sx, Bird.sy, this.w, this.h,
-            -this.w / 2, -this.h / 2, this.w+1 , this.h)
+            -this.w / 2, -this.h / 2, this.w + 1, this.h)
 
         ctx.restore()
     },
@@ -152,16 +248,16 @@ let bird = {
             this.y += this.spead
             this.spead += this.gravity
 
-            if(this.spead*9<this.jump){
-                this.rotation=-25*dg
-            }else{
-                this.rotation=25*dg
+            if (this.spead * 9 < this.jump) {
+                this.rotation = -25 * dg
+            } else {
+                this.rotation = 25 * dg
             }
         }
 
         if (this.y > ca.height - 43) {
             state.current = state.gameover
-            this.animationIndex=1
+            this.animationIndex = 1
         }
     },
 
@@ -210,6 +306,8 @@ let go1 = {
             ctx.drawImage(
                 sprite, this.sx, this.sy, this.w, this.h,
                 this.x, this.y, this.w * 2, this.h)
+
+                ca.style.borderColor='red'
         }
     }
 }
@@ -232,7 +330,23 @@ let go2 = {
 }
 
 
+function hit(){
+    if(state.current==state.game){
+        for(let i =0; i<Pipes.length ;i++){
+            let pipes=Pipes[i]
+            if (pipes.x + pipes.w > bird.x && bird.x > pipes.x) {
+                
+                if(bird.y - bird.radius>pipes.y+pipes.h &&
+                     bird.y<pipes.y+pipes.h+ pipes.gap){
 
+                    
+                }else{
+                    state.current= state.gameover
+                }
+            }
+          }
+    }
+}
 
 
 
@@ -240,7 +354,10 @@ let go2 = {
 function update() {
     bird.update()
     fg.update()
-  
+    for(let i =0; i<Pipes.length ;i++){
+        let pipes=Pipes[i]
+        pipes.update()
+      }
 }
 
 function draw() {
@@ -250,6 +367,11 @@ function draw() {
     fg.draw()
     bird.draw()
     gr.draw()
+        for(let i =0; i<Pipes.length ;i++){
+      let pipes=Pipes[i]
+      pipes.draw()
+    }
+
     go1.draw()
     go2.draw()
    
@@ -259,6 +381,14 @@ function animate() {
     update()
     draw()
     fram++
+    if(state.current==state.getready){
+        for(let i =0; i<Pipes.length ;i++){
+            Pipes.pop()
+          }
+
+          pd=-4
+    }
+    hit()
 
     requestAnimationFrame(animate)
 }
