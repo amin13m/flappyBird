@@ -25,12 +25,14 @@ function clickHandler() {
 
     } else if (state.game == state.current) {
         bird.flap()
+        
 
     } else if (state.current == state.gameover) {
         state.current = state.getready
         bird.y = 50
         bird.spead = 0
         bird.rotation = 0
+        ca.style.borderColor="black"
     }
 
 
@@ -44,6 +46,12 @@ document.addEventListener("keydown", (e) => {
     if (e.which == 32) {
         clickHandler()
     }
+})
+
+document.addEventListener("click", (e) => {
+    
+        clickHandler()
+    
 })
 
 /*
@@ -68,12 +76,13 @@ class pipe {
         }
         this.w = 26
         this.h = 163
-        this.y =-100
+        this.y =-100*(Math.random())-1.7*fg.h
         this.x =ca.width  -10
         this.dx = 2
         this.gap = 40
         this.position = []
         this.maxYPos = -150
+
 
     }
     
@@ -97,7 +106,7 @@ class pipe {
         if (state.current == state.game) {
                 
                 this.x -= this.dx;
-
+                let bPP=this.y+this.h+this.gap
             
         }
     }
@@ -108,17 +117,23 @@ class pipe {
 
 let Pipes=[]
 
-
+let pd =-4
 
 
 setInterval(()=>{
     if(state.current==state.game){
     let pipes = new pipe()
+    
     Pipes.push(pipes)
+
+    pd++
+
+    if(pd>0){
+        Pipes.shift()
+    }
 }
 
-}
-,1500)
+},1800)
 
     
 
@@ -194,10 +209,11 @@ let bird = {
     x: 80,
     y: 50,
     spead: 0,
-    gravity: 0.1,
+    gravity: 0.08,
     animationIndex: 0,
     rotation: 0,
     jump: 12,
+    radius:10,
 
     draw() {
 
@@ -278,6 +294,8 @@ let go1 = {
             ctx.drawImage(
                 sprite, this.sx, this.sy, this.w, this.h,
                 this.x, this.y, this.w * 2, this.h)
+
+                ca.style.borderColor='red'
         }
     }
 }
@@ -300,7 +318,23 @@ let go2 = {
 }
 
 
+function hit(){
+    if(state.current==state.game){
+        for(let i =0; i<Pipes.length ;i++){
+            let pipes=Pipes[i]
+            if (pipes.x + pipes.w > bird.x && bird.x > pipes.x) {
+                
+                if(bird.y - bird.radius>pipes.y+pipes.h &&
+                     bird.y<pipes.y+pipes.h+ pipes.gap){
 
+                    
+                }else{
+                    state.current= state.gameover
+                }
+            }
+          }
+    }
+}
 
 
 
@@ -338,7 +372,10 @@ function animate() {
         for(let i =0; i<Pipes.length ;i++){
             Pipes.pop()
           }
+
+          pd=-4
     }
+    hit()
 
     requestAnimationFrame(animate)
 }
