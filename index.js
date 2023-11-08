@@ -7,9 +7,18 @@ let fram = 0
 
 let sprite = new Image()
 
-sprite.src = "image/template.png"
+sprite.src = "templat/template.png"
 
-var state = {
+let flap =new Audio();
+flap.src="templat/flap.mp3"
+
+let die=new Audio();
+die.src="templat/die.mp3"
+
+let hit = new Audio()
+hit.src="templat/flappy-bird-hit-sound.mp3"
+
+let state = {
     current: 0,
     getready: 0,
     game: 1,
@@ -250,7 +259,7 @@ let bird = {
     x: 80,
     y: 50,
     spead: 0,
-    gravity: 0.08,
+    gravity: 0.04,
     animationIndex: 0,
     rotation: 0,
     jump: 12,
@@ -279,7 +288,7 @@ let bird = {
             this.y += this.spead
             this.spead += this.gravity
 
-            if (this.spead * 9 < this.jump) {
+            if (this.spead * 10 < this.jump) {
                 this.rotation = -25 * dg
             } else {
                 this.rotation = 25 * dg
@@ -287,6 +296,11 @@ let bird = {
         }
 
         if (this.y > ca.height - 43) {
+        
+            if(state.current==state.game){
+                die.play()
+            }
+
             state.current = state.gameover
             this.animationIndex = 1
         }
@@ -295,6 +309,7 @@ let bird = {
     flap() {
         this.y -= this.jump
         this.spead = 0
+        flap.play()
 
     }
 }
@@ -377,6 +392,8 @@ function stateControl() {
                 dxp += 0.0005
             }
 
+            
+
             if (pipes.x + pipes.w > bird.x && bird.x + bird.radius > pipes.x) {
 
                 if (bird.y - bird.radius > pipes.y + pipes.h &&
@@ -384,9 +401,17 @@ function stateControl() {
 
 
                 } else {
+
+                    if(bird.y+bird.h<120){
+                       hit.play()
+                    }
+
                     state.current = state.gameover
+
+                   
                 }
-            }
+            } 
+
         }
     } else if (state.current == state.getready) {
         score.value = 0
@@ -411,13 +436,14 @@ function draw() {
     ctx.fillStyle = "#70c5ce"
     ctx.fillRect(0, 0, ca.width, ca.height)
     bg.draw()
-    fg.draw()
     bird.draw()
     gr.draw()
     for (let i = 0; i < Pipes.length; i++) {
         let pipes = Pipes[i]
         pipes.draw()
     }
+    
+    fg.draw()
 
     go1.draw()
     go2.draw()
